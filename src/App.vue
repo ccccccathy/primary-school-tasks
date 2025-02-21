@@ -47,6 +47,22 @@
           <p>继续加油哦！</p>
         </div>
       </el-dialog>
+
+      <div class="data-operations">
+        <button class="import-btn" @click="importData">
+          <i class="fas fa-file-import"></i> 导入数据
+        </button>
+        <button class="export-btn" @click="exportData">
+          <i class="fas fa-file-export"></i> 导出数据
+        </button>
+        <input
+          type="file"
+          ref="fileInput"
+          style="display: none"
+          accept=".json"
+          @change="handleFileImport"
+        >
+      </div>
     </el-config-provider>
   </div>
 </template>
@@ -119,6 +135,60 @@ const toggleTask = async (day: string, taskId: string) => {
 const switchWeek = async (offset: number) => {
   await store.switchWeek(offset);
 };
+
+const fileInput = ref<HTMLInputElement | null>(null)
+
+// 导出数据
+const exportData = () => {
+  if (!currentWeek.value) {
+    alert('暂无数据可导出')
+    return
+  }
+  
+  const data = JSON.stringify({
+    currentWeek: currentWeek.value,
+    // 如果还有其他需要导出的store数据，可以在这里添加
+  })
+  
+  const blob = new Blob([data], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `weekly-tasks-${new Date().toISOString().split('T')[0]}.json`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+// 触发文件选择
+const importData = () => {
+  fileInput.value?.click()
+}
+
+// 处理文件导入
+const handleFileImport = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target?.result as string)
+      // 将导入的数据更新到store中
+      store.$patch(data)
+      window.location.reload() // 刷新页面以加载新数据
+    } catch (error) {
+      alert('导入失败，请确保文件格式正确')
+    }
+  }
+  reader.readAsText(file)
+  
+  // 清除文件选择，以便下次选择同一文件时也能触发事件
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
+}
 
 onMounted(() => {
   store.loadData();
@@ -305,5 +375,47 @@ onMounted(() => {
   .score-section {
     flex-direction: column;
   }
+}
+
+.data-operations {
+  margin-top: 2rem;
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.import-btn,
+.export-btn {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.import-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.export-btn {
+  background-color: #2196F3;
+  color: white;
+}
+
+.import-btn:hover,
+.export-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.import-btn:active,
+.export-btn:active {
+  transform: translateY(0);
 }
 </style> 
