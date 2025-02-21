@@ -256,61 +256,66 @@ onMounted(() => {
   margin-top: 16px;
 }
 
-.celebration-dialog :deep(.el-dialog) {
-  background: linear-gradient(135deg, #1a237e, #0d47a1);
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(10px);
+.celebration-dialog :deep(.el-overlay) {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(3px);
 }
 
-.celebration-dialog :deep(.el-dialog)::before {
-  content: '🌊';
-  position: absolute;
-  right: -10px;
-  bottom: -10px;
-  font-size: 40px;
-  animation: slideIn 0.5s ease-out forwards;
-  opacity: 0;
-  transform: translateX(100%);
-  filter: drop-shadow(0 0 10px rgba(3, 169, 244, 0.5));
+.celebration-dialog :deep(.el-overlay-dialog) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+}
+
+.celebration-dialog :deep(.el-dialog) {
+  margin: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  width: fit-content !important;
+  position: relative !important;
+}
+
+.celebration-dialog :deep(.el-dialog__header),
+.celebration-dialog :deep(.el-dialog__body),
+.celebration-dialog :deep(.el-dialog__footer),
+.celebration-dialog :deep(.el-dialog__content) {
+  all: unset !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
 }
 
 .celebration-content {
   padding: 32px;
   text-align: center;
   animation: zoomIn 0.5s ease-out;
-  position: relative;
   color: white;
-  background: linear-gradient(135deg, rgba(26, 35, 126, 0.9), rgba(13, 71, 161, 0.9));
+  background: linear-gradient(135deg, #4CAF50, #2196F3);
   border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  width: 300px;
 }
 
 .celebration-icon {
   font-size: 64px;
   color: #FFD700;
   margin-bottom: 16px;
-  animation: spinAndGlow 2s infinite linear;
-  filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.5));
+  animation: bounce 1s infinite;
 }
 
 .celebration-content h2 {
-  color: #FFD700;
+  color: white;
   font-size: 28px;
   margin: 16px 0 8px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  animation: pulseText 1.5s infinite;
+  font-weight: bold;
 }
 
 .celebration-content p {
-  color: #81D4FA;
+  color: rgba(255, 255, 255, 0.9);
   font-size: 18px;
   margin: 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  animation: floatText 2s ease-in-out infinite;
 }
 
 @keyframes zoomIn {
@@ -321,15 +326,6 @@ onMounted(() => {
   to {
     opacity: 1;
     transform: scale(1);
-  }
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
   }
 }
 
@@ -379,6 +375,17 @@ onMounted(() => {
   }
   50% {
     transform: translateY(-5px);
+  }
+}
+
+@keyframes glowingBorder {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
   }
 }
 
