@@ -17,7 +17,6 @@
 - TypeScript
 - Vite
 - Element Plus
-- Firebase (数据存储)
 - Day.js (日期处理)
 
 ## 开始使用
@@ -63,7 +62,6 @@ npm run build
 
 ## 注意事项
 
-- 首次使用需要配置 Firebase
 - 建议使用最新版本的浏览器
 - 移动端请保持网络连接以同步数据
 
