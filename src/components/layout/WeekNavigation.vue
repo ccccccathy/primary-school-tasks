@@ -53,15 +53,17 @@ const formatDateRange = computed(() => {
   justify-content: space-between;
   align-items: center;
   padding: 0 20px;
+  min-width: 500px;
 }
 
 .current-week-info {
   padding: 0 15px;
   text-align: center;
+  min-width: 300px;
 }
 
 .week-number {
-  font-size: 3.5em;
+  font-size: 3em;
   font-weight: bold;
   color: #FF6D00;
   text-shadow: 3px 3px 0 #FFE0B2;
@@ -71,6 +73,7 @@ const formatDateRange = computed(() => {
   -webkit-text-fill-color: transparent;
   transform: scale(1);
   transition: transform 0.3s ease;
+  white-space: nowrap;
 }
 
 .week-number:hover {
