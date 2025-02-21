@@ -3,16 +3,41 @@
     <el-config-provider :locale="zhCn">
       <header class="header">
         <div class="header-content">
+          <!-- 顶部周导航 -->
           <WeekNavigation
             :week-number="currentWeek?.weekNumber || 1"
             :start-date="currentWeek?.startDate || ''"
             :end-date="currentWeek?.endDate || ''"
             @switch-week="switchWeek"
           />
+          
+          <!-- 统计信息区域 -->
+          <div class="stats-grid">
+            <!-- 本周得分 -->
+            <div class="stats-item weekly-score">
+              <ScoreDisplay :earned-points="earnedPoints" />
+            </div>
+            
+            <!-- 总分和段位 -->
+            <div class="stats-item rank-info">
+              <div class="total-points">
+                <span class="label">总积分</span>
+                <span class="value">{{ totalPoints }}</span>
+              </div>
+              <div class="rank-display">
+                <span class="label">当前段位</span>
+                <div class="rank-badge">
+                  <span class="rank-name">{{ getRankName(totalPoints) }}</span>
+                  <span class="rank-icon">{{ getRankEmoji(totalPoints) }}</span>
+                </div>
+                <RankGuide />
+              </div>
+            </div>
 
-          <div class="score-section">
-            <ScoreDisplay :earned-points="earnedPoints" />
-            <MotivationCard :completion-percentage="completionPercentage" />
+            <!-- 激励卡片 -->
+            <div class="stats-item motivation">
+              <MotivationCard :completion-percentage="completionPercentage" />
+            </div>
           </div>
         </div>
       </header>
@@ -33,20 +58,15 @@
         </CategoryTabs>
       </main>
 
-      <el-dialog
-        v-model="showCelebration"
-        :show-close="false"
-        :modal="true"
-        class="celebration-dialog"
-        width="300px"
-        align-center
-      >
-        <div class="celebration-content">
-          <el-icon class="celebration-icon"><StarFilled /></el-icon>
-          <h2>太棒了！</h2>
-          <p>继续加油哦！</p>
+      <div v-if="showCelebration" class="custom-celebration-overlay">
+        <div class="custom-celebration-modal">
+          <div class="celebration-content">
+            <div class="star-icon">⭐</div>
+            <h2>太棒了！</h2>
+            <p>继续加油哦！</p>
+          </div>
         </div>
-      </el-dialog>
+      </div>
 
       <div class="data-operations">
         <button class="import-btn" @click="importData">
@@ -72,7 +92,6 @@ import { ref, computed, onMounted } from 'vue';
 import { useTaskStore } from './stores/taskStore';
 import { storeToRefs } from 'pinia';
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs';
-import { StarFilled } from '@element-plus/icons-vue';
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
 
@@ -82,6 +101,11 @@ import ScoreDisplay from './components/score/ScoreDisplay.vue';
 import MotivationCard from './components/score/MotivationCard.vue';
 import CategoryTabs from './components/common/CategoryTabs.vue';
 import TaskList from './components/tasks/TaskList.vue';
+import GrowthLevel from './components/score/GrowthLevel.vue';
+import RankGuide from './components/score/RankGuide.vue';
+
+// 导入成长体系
+import { getCurrentRank } from './config/growth-system';
 
 dayjs.locale('zh-cn');
 
@@ -104,6 +128,10 @@ const weekDays = [
 
 const earnedPoints = computed(() => currentWeek.value?.earnedPoints || 0);
 
+const totalPoints = computed(() => {
+  return store.getAllWeeksPoints();
+});
+
 const getAllTasksByCategory = (category: string) => {
   if (!currentWeek.value) return [];
   
@@ -124,12 +152,15 @@ const getAllTasksByCategory = (category: string) => {
   }));
 };
 
-const toggleTask = async (day: string, taskId: string) => {
+const toggleTask = async (day: string, taskId: string, isCompleting: boolean) => {
   await store.toggleTask(day, taskId);
-  showCelebration.value = true;
-  setTimeout(() => {
-    showCelebration.value = false;
-  }, 1500);
+  // 只有在完成任务时才显示庆祝动画
+  if (isCompleting) {
+    showCelebration.value = true;
+    setTimeout(() => {
+      showCelebration.value = false;
+    }, 1500);
+  }
 };
 
 const switchWeek = async (offset: number) => {
@@ -190,6 +221,18 @@ const handleFileImport = (event: Event) => {
   }
 }
 
+// 修改获取段位名称的函数
+const getRankName = (points: number) => {
+  const rank = getCurrentRank(points);
+  return rank.name;
+}
+
+// 修改获取段位表情的函数
+const getRankEmoji = (points: number) => {
+  const rank = getCurrentRank(points);
+  return rank.icon;
+}
+
 onMounted(() => {
   store.loadData();
 });
@@ -222,75 +265,112 @@ onMounted(() => {
 }
 
 .header {
-  margin-bottom: 30px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
   padding: 24px;
-  border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  position: relative;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.header::after {
-  content: '⚡';
-  position: absolute;
-  right: -10px;
-  top: -10px;
-  font-size: 40px;
-  animation: bounce 2s ease-in-out infinite;
-  text-shadow: 0 0 20px rgba(255, 87, 34, 0.8);
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  border-radius: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 }
 
 .header-content {
   display: flex;
-  justify-content: space-between;
-  gap: 24px;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.score-section {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 32px;
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
   margin-top: 16px;
 }
 
-.celebration-dialog :deep(.el-overlay) {
-  background-color: rgba(0, 0, 0, 0.5) !important;
-  backdrop-filter: blur(3px);
+.stats-item {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
 }
 
-.celebration-dialog :deep(.el-overlay-dialog) {
+.stats-item:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.total-points, .rank-display {
+  text-align: center;
+  color: white;
+  margin-bottom: 12px;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 8px;
+}
+
+.value {
+  font-size: 36px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.rank-badge {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent !important;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: 20px;
 }
 
-.celebration-dialog :deep(.el-dialog) {
-  margin: 0 !important;
-  background: none !important;
-  box-shadow: none !important;
-  width: fit-content !important;
-  position: relative !important;
+.rank-name {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
 }
 
-.celebration-dialog :deep(.el-dialog__header),
-.celebration-dialog :deep(.el-dialog__body),
-.celebration-dialog :deep(.el-dialog__footer),
-.celebration-dialog :deep(.el-dialog__content) {
-  all: unset !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  background: none !important;
-  box-shadow: none !important;
+.rank-icon {
+  font-size: 28px;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-item {
+    padding: 16px;
+  }
+}
+
+.custom-celebration-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.custom-celebration-modal {
+  padding: 32px;
+  text-align: center;
+  animation: zoomIn 0.5s ease-out;
 }
 
 .celebration-content {
   padding: 32px;
   text-align: center;
-  animation: zoomIn 0.5s ease-out;
   color: white;
   background: linear-gradient(135deg, #4CAF50, #2196F3);
   border-radius: 16px;
@@ -298,24 +378,10 @@ onMounted(() => {
   width: 300px;
 }
 
-.celebration-icon {
+.star-icon {
   font-size: 64px;
-  color: #FFD700;
   margin-bottom: 16px;
   animation: bounce 1s infinite;
-}
-
-.celebration-content h2 {
-  color: white;
-  font-size: 28px;
-  margin: 16px 0 8px;
-  font-weight: bold;
-}
-
-.celebration-content p {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 18px;
-  margin: 0;
 }
 
 @keyframes zoomIn {
@@ -389,18 +455,12 @@ onMounted(() => {
   }
 }
 
-@media (max-width: 768px) {
-  .app-container {
-    padding: 10px;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
   }
-
-  .header-content {
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .score-section {
-    flex-direction: column;
+  to {
+    opacity: 1;
   }
 }
 

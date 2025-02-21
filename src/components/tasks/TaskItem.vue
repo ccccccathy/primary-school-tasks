@@ -16,10 +16,15 @@
     <div v-for="day in weekDays" 
          :key="day.value"
          class="day-column"
-         @click="handleClick(day.value)"
     >
-      <div :class="['checkbox', { completed: isTaskCompleted(day.value) }]">
-        <el-icon v-if="isTaskCompleted(day.value)" class="check-icon" :size="20">
+      <div :class="['checkbox', { completed: isTaskCompleted(day.value) }]"
+           @click="handleClick(day.value)"
+      >
+        <el-icon v-if="isTaskCompleted(day.value)" 
+                 class="check-icon" 
+                 :size="20"
+                 @click.stop="handleUncheck(day.value)"
+        >
           <Select />
         </el-icon>
       </div>
@@ -43,13 +48,17 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'toggle-task', day: string, taskId: string): void;
+  (e: 'toggle-task', day: string, taskId: string, isCompleting: boolean): void;
 }>();
 
 const handleClick = (day: string) => {
-  // 在当天的任务列表中找到对应的任务
-  const dayTasks = props.completedDays.includes(day);
-  emit('toggle-task', day, props.task.id);
+  if (!isTaskCompleted(day)) {
+    emit('toggle-task', day, props.task.id, true);
+  }
+};
+
+const handleUncheck = (day: string) => {
+  emit('toggle-task', day, props.task.id, false);
 };
 
 const isTaskCompleted = (day: string) => {

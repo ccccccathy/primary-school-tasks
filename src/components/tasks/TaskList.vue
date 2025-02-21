@@ -25,7 +25,7 @@
           :task="task"
           :week-days="weekDays"
           :completed-days="getCompletedDaysForTask(task.id)"
-          @toggle-task="$emit('toggle-task', $event, task.id)"
+          @toggle-task="(day, taskId, isCompleting) => $emit('toggle-task', day, taskId, isCompleting)"
         />
       </div>
     </div>
@@ -49,7 +49,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'toggle-task', day: string, taskId: string): void;
+  (e: 'toggle-task', day: string, taskId: string, isCompleting: boolean): void;
 }>();
 
 const getDayCompletionPoints = (day: string) => {
@@ -99,16 +99,6 @@ const getCompletedDaysForTask = (taskId: string) => {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
-.week-table::before {
-  content: '⚔️';
-  position: absolute;
-  right: -20px;
-  bottom: -20px;
-  font-size: 80px;
-  opacity: 0.1;
-  transform: rotate(-15deg);
-  filter: drop-shadow(0 0 20px rgba(255, 87, 34, 0.5));
-}
 
 .week-header {
   display: grid;
