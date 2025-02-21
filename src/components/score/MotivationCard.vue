@@ -13,9 +13,7 @@
     </div>
     <div class="motivation-text">
       {{ motivationText }}
-      <div class="stars">
-        <el-icon class="star" v-for="i in 3" :key="i"><Star /></el-icon>
-      </div>
+     
     </div>
   </div>
 </template>
