@@ -82,7 +82,10 @@ const formatDateRange = computed(() => {
 
 .week-date {
   font-size: 1.2em;
-  color: #2E7D32;
+  color: #fff;
+  text-shadow: 
+    1px 1px 3px rgba(0, 0, 0, 0.5),
+    -1px -1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .nav-button :deep(.el-button) {
